@@ -78,7 +78,21 @@ summary = {
 }
 checked_definitions = 0
 changed_definitions = 0
+
+multi_defs = len(defintion_files) > 1
+shown_def_name = False
+
+def msg_print(msg):   
+    global shown_def_name
+    if (not shown_def_name):
+        print("---- " + defintion_file + " ----")
+        shown_def_name = True
+    
+    print(msg)
+
 for defintion_file in defintion_files:
+    shown_def_name = False
+    
     parsed = dbd.parse_dbd_file(os.path.join(root_path, defintion_file))
     target_def = None
     compare_def = None
@@ -94,14 +108,13 @@ for defintion_file in defintion_files:
     if not target_def and not compare_def:
         continue
     
-    print("---- " + defintion_file + " ----")
     summary["checked"] += 1
     
     if not target_def:
-        print("Unable to find target version definition.")
+        msg_print("Unable to find target version definition.")
         
     if not compare_def:
-        print("Unable to find compare version definition.")
+        msg_print("Unable to find compare version definition.")
         
     if not target_def or not compare_def:
         summary["changed"] += 1
@@ -112,7 +125,7 @@ for defintion_file in defintion_files:
     
     if args.verbose:
         if target_entries_len != compare_entries_len:
-            print("Entry count different.")
+            msg_print("Entry count different.")
     
     largest_entries = max(target_entries_len, compare_entries_len)
     has_changes = False
@@ -121,13 +134,14 @@ for defintion_file in defintion_files:
         compare_entry = compare_def.entries[i] or None
         
         if target_entry.__str__() != compare_entry.__str__():
-            print("- Change at row {} - ".format(i))
-            print(target_entry)
-            print(compare_entry)
+            msg_print("- Change at row {} - ".format(i))
+            msg_print(target_entry)
+            msg_print(compare_entry)
             has_changes = True
             
     if not has_changes:
-        print("No changes")
+        if (not multi_defs):
+            msg_print("No changes")
     else:
         summary["changed"] += 1
         
